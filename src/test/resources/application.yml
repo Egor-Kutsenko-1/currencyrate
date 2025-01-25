@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: currency-rate
+
+api:
+  exchangerate:
+    url: http://localhost:9080
+    key: test
+
+application:
+#  Choose source of exchange rates here. Supported values: exchangerate
+  source: exchangerate

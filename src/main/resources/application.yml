@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: currency-rate
+
+api:
+  exchangerate:
+    url: https://api.exchangerate.host
+    key: c88585ec17bf7113e4347b03b8e35780
+
+application:
+#  Choose source of exchange rates here. Supported values: exchangerate
+  source: exchangerate
+
+
