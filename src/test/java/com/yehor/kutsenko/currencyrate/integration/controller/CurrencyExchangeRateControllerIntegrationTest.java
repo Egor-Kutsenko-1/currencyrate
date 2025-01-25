@@ -16,6 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateApplicationTests {
 
+    private static final String ACCESS_KEY = "test";
+    private static final String QUERY_PARAM_ACCESS_KEY = "access_key";
+    private static final String QUERY_PARAM_ACCESS_SOURCE = "source";
+
     @Test
     void whenSearchRateForSpecificCurrency_thenShouldReturnCorrectResponse() throws Exception {
         objectMapper.registerModule(new JavaTimeModule());
@@ -32,8 +36,8 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
         );
 
         EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.urlPathEqualTo("/live"))
-                .withQueryParam("access_key", WireMock.equalTo("test"))
-                .withQueryParam("source", WireMock.equalTo("UAH"))
+                .withQueryParam(QUERY_PARAM_ACCESS_KEY, WireMock.equalTo(ACCESS_KEY))
+                .withQueryParam(QUERY_PARAM_ACCESS_SOURCE, WireMock.equalTo("UAH"))
                 .willReturn(WireMock.okJson(jsonResponse)));
 
         mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/rate"))
@@ -42,5 +46,30 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
                 .andExpect(jsonPath("$.rates.UAHPLN", is(5.31)))
                 .andExpect(jsonPath("$.rates.UAHEUR", is(41.57)))
                 .andExpect(jsonPath("$.rates.UAHGPB", is(0.89)));
+    }
+
+    @Test
+    void whenSearchRateBetweenTwoCurrencies_thenShouldReturnCorrectResponse() throws Exception {
+        objectMapper.registerModule(new JavaTimeModule());
+
+        String jsonResponse = objectMapper.writeValueAsString(
+                CurrencyRatesExternalSourceResponse.builder()
+                        .timestamp(Instant.now())
+                        .quotes(Map.of(
+                                "USDEUR", 0.91
+                        ))
+                        .build()
+        );
+
+        EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.urlPathEqualTo("/live"))
+                .withQueryParam(QUERY_PARAM_ACCESS_KEY, WireMock.equalTo(ACCESS_KEY))
+                .withQueryParam(QUERY_PARAM_ACCESS_SOURCE, WireMock.equalTo("USD"))
+                .withQueryParam("currencies", WireMock.equalTo("EUR"))
+                .willReturn(WireMock.okJson(jsonResponse)));
+
+        mockMvc.perform(get(BASE_URL + "/currencies/exchange/USD/rate/EUR"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rates.size()", is(1)))
+                .andExpect(jsonPath("$.rates.USDEUR", is(0.91)));
     }
 }

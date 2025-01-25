@@ -6,4 +6,6 @@ public interface CurrencyService {
 
     CurrencyRates getAllExchangeRatesForCurrency(String currency);
 
+    CurrencyRates getRateForSpecificCurrencies(String currencyFrom, String currencyTo);
+
 }

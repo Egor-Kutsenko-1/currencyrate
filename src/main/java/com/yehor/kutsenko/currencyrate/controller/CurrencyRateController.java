@@ -32,4 +32,19 @@ public class CurrencyRateController {
                 ? ResponseEntity.notFound().build()
                 : ResponseEntity.ok(currencyRatesResponse);
     }
+
+    @GetMapping(value = "/{currencyFrom}/rate/{currencyTo}")
+    public ResponseEntity<CurrencyRatesResponse> getRateForSpecificCurrencies(
+            @PathVariable String currencyFrom,
+            @PathVariable String currencyTo) {
+
+        log.info("Get currency rate for {} and {}", currencyFrom, currencyTo);
+
+        CurrencyRates allExchangeRatesForCurrency = currencyService.getRateForSpecificCurrencies(currencyFrom, currencyTo);
+        CurrencyRatesResponse currencyRatesResponse = currencyRatesMapper.toResponse(allExchangeRatesForCurrency);
+
+        return currencyRatesResponse.getRates().isEmpty()
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(currencyRatesResponse);
+    }
 }

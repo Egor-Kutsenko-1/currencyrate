@@ -7,4 +7,6 @@ public interface CurrencySource {
 
     CurrencyRatesExternalSourceResponse getExchangeRate(String source);
 
+    CurrencyRatesExternalSourceResponse getRateForSpecificCurrencies(String currencyFrom, String currencyTo);
+
 }

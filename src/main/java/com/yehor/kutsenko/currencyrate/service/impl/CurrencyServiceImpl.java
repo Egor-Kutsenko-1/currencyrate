@@ -20,11 +20,23 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     public CurrencyRates getAllExchangeRatesForCurrency(String currency) {
 
-        CurrencyRatesExternalSourceResponse exchangeRateResponse = currencySource.getExchangeRate(currency);
+        var exchangeRateResponse = currencySource.getExchangeRate(currency);
 
-        CurrencyRates currencyRates = currencyRatesMapper.toModel(exchangeRateResponse);
+        var currencyRates = currencyRatesMapper.toModel(exchangeRateResponse);
 
         log.info("Rates for currency {}: \n {}", currency, currencyRates.getRates());
+
+        return currencyRates;
+    }
+
+    @Override
+    public CurrencyRates getRateForSpecificCurrencies(String currencyFrom, String currencyTo) {
+
+        var exchangeRateResponse = currencySource.getRateForSpecificCurrencies(currencyFrom, currencyTo);
+
+        var currencyRates = currencyRatesMapper.toModel(exchangeRateResponse);
+
+        log.info("Rate between {} and {}: \n {}", currencyFrom, currencyTo, currencyRates.getRates());
 
         return currencyRates;
     }

@@ -15,4 +15,9 @@ public interface ExchangeRateClient extends CurrencySource {
     @GetMapping(value = "/live?access_key=${api.exchangerate.key}")
     CurrencyRatesExternalSourceResponse getExchangeRate(@RequestParam("source") String source);
 
+    @GetMapping(value = "/live?access_key=${api.exchangerate.key}")
+    CurrencyRatesExternalSourceResponse getRateForSpecificCurrencies(
+            @RequestParam("source") String currencyFrom,
+            @RequestParam("currencies") String currencyTo);
+
 }
