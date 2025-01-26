@@ -3,6 +3,7 @@ package com.yehor.kutsenko.currencyrate.integration.controller;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.yehor.kutsenko.currencyrate.CurrencyRateApplicationTests;
+import com.yehor.kutsenko.currencyrate.dto.external.CurrencyConvertingExternalSourceResponse;
 import com.yehor.kutsenko.currencyrate.dto.external.CurrencyRatesExternalSourceResponse;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,10 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
 
     private static final String ACCESS_KEY = "test";
     private static final String QUERY_PARAM_ACCESS_KEY = "access_key";
-    private static final String QUERY_PARAM_ACCESS_SOURCE = "source";
+    private static final String QUERY_PARAM_SOURCE = "source";
+    private static final String QUERY_PARAM_CURRENCY_FROM = "from";
+    private static final String QUERY_PARAM_CURRENCY_TO = "to";
+    private static final String QUERY_PARAM_AMOUNT = "amount";
 
     @Test
     void whenSearchRateForSpecificCurrency_thenShouldReturnCorrectResponse() throws Exception {
@@ -37,7 +41,7 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
 
         EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.urlPathEqualTo("/live"))
                 .withQueryParam(QUERY_PARAM_ACCESS_KEY, WireMock.equalTo(ACCESS_KEY))
-                .withQueryParam(QUERY_PARAM_ACCESS_SOURCE, WireMock.equalTo("UAH"))
+                .withQueryParam(QUERY_PARAM_SOURCE, WireMock.equalTo("UAH"))
                 .willReturn(WireMock.okJson(jsonResponse)));
 
         mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/rate"))
@@ -63,7 +67,7 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
 
         EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.urlPathEqualTo("/live"))
                 .withQueryParam(QUERY_PARAM_ACCESS_KEY, WireMock.equalTo(ACCESS_KEY))
-                .withQueryParam(QUERY_PARAM_ACCESS_SOURCE, WireMock.equalTo("USD"))
+                .withQueryParam(QUERY_PARAM_SOURCE, WireMock.equalTo("USD"))
                 .withQueryParam("currencies", WireMock.equalTo("EUR"))
                 .willReturn(WireMock.okJson(jsonResponse)));
 
@@ -71,5 +75,34 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rates.size()", is(1)))
                 .andExpect(jsonPath("$.rates.USDEUR", is(0.91)));
+    }
+
+    @Test
+    void whenConvertCurrencyToAnother_thenShouldReturnCorrectResponse() throws Exception {
+        objectMapper.registerModule(new JavaTimeModule());
+
+        Instant now = Instant.now();
+        String jsonResponse = objectMapper.writeValueAsString(
+                CurrencyConvertingExternalSourceResponse.builder()
+                        .result(0.23903)
+                        .info(CurrencyConvertingExternalSourceResponse.Info.builder()
+                                .timestamp(now)
+                                .quote(0.023903)
+                                .build())
+                        .build()
+        );
+
+        EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.urlPathEqualTo("/convert"))
+                .withQueryParam(QUERY_PARAM_ACCESS_KEY, WireMock.equalTo(ACCESS_KEY))
+                .withQueryParam(QUERY_PARAM_CURRENCY_FROM, WireMock.equalTo("UAH"))
+                .withQueryParam(QUERY_PARAM_CURRENCY_TO, WireMock.equalTo("USD"))
+                .withQueryParam(QUERY_PARAM_AMOUNT, WireMock.equalTo("10.0"))
+                .willReturn(WireMock.okJson(jsonResponse)));
+
+        mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/convert/USD?amount=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result", is(0.23903)))
+                .andExpect(jsonPath("$.info.quote", is(0.023903)))
+                .andExpect(jsonPath("$.info.timestamp", is(now.toString())));
     }
 }

@@ -2,8 +2,9 @@ package com.yehor.kutsenko.currencyrate.service.impl;
 
 
 import com.yehor.kutsenko.currencyrate.client.CurrencySource;
-import com.yehor.kutsenko.currencyrate.dto.external.CurrencyRatesExternalSourceResponse;
+import com.yehor.kutsenko.currencyrate.mapper.CurrencyConversionMapper;
 import com.yehor.kutsenko.currencyrate.mapper.CurrencyRatesMapper;
+import com.yehor.kutsenko.currencyrate.model.CurrencyConverting;
 import com.yehor.kutsenko.currencyrate.model.CurrencyRates;
 import com.yehor.kutsenko.currencyrate.service.CurrencyService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class CurrencyServiceImpl implements CurrencyService {
 
     private final CurrencyRatesMapper currencyRatesMapper;
+    private final CurrencyConversionMapper currencyConversionMapper;
     private final CurrencySource currencySource;
 
     public CurrencyRates getAllExchangeRatesForCurrency(String currency) {
@@ -39,5 +41,19 @@ public class CurrencyServiceImpl implements CurrencyService {
         log.info("Rate between {} and {}: \n {}", currencyFrom, currencyTo, currencyRates.getRates());
 
         return currencyRates;
+    }
+
+    @Override
+    public CurrencyConverting convert(String currencyFrom, String currencyTo, Double amount) {
+
+
+        var exchangeRateResponse = currencySource.convertCurrencyToAnother(currencyFrom, currencyTo, amount);
+
+        var conversionResult = currencyConversionMapper.toModel(exchangeRateResponse);
+
+        log.info("The result of converting {} {} to {} is {} {}",
+                amount, currencyFrom, currencyTo, conversionResult.getResult(), currencyTo);
+
+        return conversionResult;
     }
 }

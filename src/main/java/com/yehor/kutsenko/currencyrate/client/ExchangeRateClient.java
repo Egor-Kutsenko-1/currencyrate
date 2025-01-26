@@ -1,5 +1,6 @@
 package com.yehor.kutsenko.currencyrate.client;
 
+import com.yehor.kutsenko.currencyrate.dto.external.CurrencyConvertingExternalSourceResponse;
 import com.yehor.kutsenko.currencyrate.dto.external.CurrencyRatesExternalSourceResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -19,5 +20,11 @@ public interface ExchangeRateClient extends CurrencySource {
     CurrencyRatesExternalSourceResponse getRateForSpecificCurrencies(
             @RequestParam("source") String currencyFrom,
             @RequestParam("currencies") String currencyTo);
+
+    @GetMapping(value = "/convert?access_key=${api.exchangerate.key}")
+    CurrencyConvertingExternalSourceResponse convertCurrencyToAnother(
+            @RequestParam("from") String currencyFrom,
+            @RequestParam("to") String currencyTo,
+            @RequestParam("amount") Double amount);
 
 }
