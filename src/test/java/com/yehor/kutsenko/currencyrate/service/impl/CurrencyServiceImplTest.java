@@ -7,6 +7,7 @@ import com.yehor.kutsenko.currencyrate.dto.external.CurrencyRatesExternalSourceR
 import com.yehor.kutsenko.currencyrate.mapper.CurrencyConversionMapper;
 import com.yehor.kutsenko.currencyrate.mapper.CurrencyRatesMapper;
 import com.yehor.kutsenko.currencyrate.model.CurrencyConverting;
+import com.yehor.kutsenko.currencyrate.model.CurrencyConvertingMultiple;
 import com.yehor.kutsenko.currencyrate.model.CurrencyRates;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,8 +104,9 @@ class CurrencyServiceImplTest {
         List<String> currenciesToRate = List.of("EUR", "UAH");
         Double amount = 100.0;
 
-        CurrencyRatesExternalSourceResponse mockExternalResponse = new CurrencyRatesExternalSourceResponse();  // placeholder
+        CurrencyRatesExternalSourceResponse mockExternalResponse = new CurrencyRatesExternalSourceResponse();
         CurrencyRates mockRates = CurrencyRates.builder()
+                .success("true")
                 .timestamp(Instant.now())
                 .source("USD")
                 .rates(Map.of("USDEUR", 0.92, "USDUAH", 37.0))
@@ -114,16 +116,16 @@ class CurrencyServiceImplTest {
                 .thenReturn(mockExternalResponse);
         when(currencyRatesMapper.toModel(mockExternalResponse)).thenReturn(mockRates);
 
-        List<CurrencyConverting> result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
+        CurrencyConvertingMultiple result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
 
         verify(currencySource, times(1)).getExchangeRate(eq("USD"), eq("EUR,UAH"));
         verify(currencyRatesMapper, times(1)).toModel(mockExternalResponse);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(2, result.getConversionResult().size());
 
-        CurrencyConverting first = result.get(0);
-        CurrencyConverting second = result.get(1);
+        CurrencyConverting first = result.getConversionResult().get(0);
+        CurrencyConverting second = result.getConversionResult().get(1);
 
         assertEquals("USD", first.getQuery().getFrom());
         assertEquals("EUR", first.getQuery().getTo());
@@ -143,6 +145,7 @@ class CurrencyServiceImplTest {
 
         CurrencyRatesExternalSourceResponse mockExternalResponse = new CurrencyRatesExternalSourceResponse();
         CurrencyRates mockRates = CurrencyRates.builder()
+                .success("true")
                 .timestamp(Instant.now())
                 .source("USD")
                 .rates(Map.of())
@@ -152,12 +155,12 @@ class CurrencyServiceImplTest {
                 .thenReturn(mockExternalResponse);
         when(currencyRatesMapper.toModel(mockExternalResponse)).thenReturn(mockRates);
 
-        List<CurrencyConverting> result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
+        CurrencyConvertingMultiple result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
 
         verify(currencySource, times(1)).getExchangeRate(eq("USD"), eq(""));
         verify(currencyRatesMapper, times(1)).toModel(mockExternalResponse);
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getConversionResult().isEmpty());
     }
 
     @Test
@@ -168,6 +171,7 @@ class CurrencyServiceImplTest {
 
         CurrencyRatesExternalSourceResponse mockExternalResponse = new CurrencyRatesExternalSourceResponse();
         CurrencyRates mockRates = CurrencyRates.builder()
+                .success("true")
                 .timestamp(Instant.now())
                 .source("USD")
                 .rates(Collections.emptyMap())
@@ -176,12 +180,12 @@ class CurrencyServiceImplTest {
         when(currencySource.getExchangeRate(eq(currencyFrom), eq("EUR,UAH")))
                 .thenReturn(mockExternalResponse);
         when(currencyRatesMapper.toModel(mockExternalResponse)).thenReturn(mockRates);
-        List<CurrencyConverting> result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
+        CurrencyConvertingMultiple result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
         verify(currencySource).getExchangeRate(eq(currencyFrom), eq("EUR,UAH"));
         verify(currencyRatesMapper).toModel(mockExternalResponse);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getConversionResult().isEmpty());
     }
 
     @Test
@@ -192,6 +196,7 @@ class CurrencyServiceImplTest {
 
         CurrencyRatesExternalSourceResponse mockExternalResponse = new CurrencyRatesExternalSourceResponse();
         CurrencyRates mockRates = CurrencyRates.builder()
+                .success("true")
                 .timestamp(Instant.now())
                 .source("USD")
                 .rates(Map.of("USDEUR", 0.92))
@@ -201,10 +206,10 @@ class CurrencyServiceImplTest {
                 .thenReturn(mockExternalResponse);
         when(currencyRatesMapper.toModel(mockExternalResponse)).thenReturn(mockRates);
 
-        List<CurrencyConverting> result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
+        CurrencyConvertingMultiple result = currencyService.convertMultiple(currencyFrom, currenciesToRate, amount);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(0.0, result.get(0).getResult());
+        assertEquals(1, result.getConversionResult().size());
+        assertEquals(0.0, result.getConversionResult().get(0).getResult());
     }
 }

@@ -1,11 +1,11 @@
 package com.yehor.kutsenko.currencyrate.mapper;
 
 import com.yehor.kutsenko.currencyrate.dto.external.CurrencyConvertingExternalSourceResponse;
+import com.yehor.kutsenko.currencyrate.dto.response.CurrencyConvertingMultipleResponse;
 import com.yehor.kutsenko.currencyrate.dto.response.CurrencyConvertingResponse;
 import com.yehor.kutsenko.currencyrate.model.CurrencyConverting;
+import com.yehor.kutsenko.currencyrate.model.CurrencyConvertingMultiple;
 import org.mapstruct.Mapper;
-
-import java.util.List;
 
 @Mapper
 public interface CurrencyConversionMapper {
@@ -14,6 +14,6 @@ public interface CurrencyConversionMapper {
 
     CurrencyConvertingResponse toResponse(CurrencyConverting model);
 
-    List<CurrencyConvertingResponse> toResponse(List<CurrencyConverting> model);
+    CurrencyConvertingMultipleResponse toResponse(CurrencyConvertingMultiple model);
 
 }

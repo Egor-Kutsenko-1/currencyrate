@@ -5,6 +5,7 @@ import com.yehor.kutsenko.currencyrate.client.CurrencySource;
 import com.yehor.kutsenko.currencyrate.mapper.CurrencyConversionMapper;
 import com.yehor.kutsenko.currencyrate.mapper.CurrencyRatesMapper;
 import com.yehor.kutsenko.currencyrate.model.CurrencyConverting;
+import com.yehor.kutsenko.currencyrate.model.CurrencyConvertingMultiple;
 import com.yehor.kutsenko.currencyrate.model.CurrencyRates;
 import com.yehor.kutsenko.currencyrate.service.CurrencyService;
 import lombok.RequiredArgsConstructor;
@@ -62,9 +63,21 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public List<CurrencyConverting> convertMultiple(String currencyFrom, List<String> currenciesToRate, Double amount) {
+    public CurrencyConvertingMultiple convertMultiple(String currencyFrom, List<String> currenciesToRate, Double amount) {
         CurrencyRates rates = getRates(currencyFrom, currenciesToRate);
-        return convertAll(rates, amount);
+        if (rates.getSuccess().equals("false")){
+            return CurrencyConvertingMultiple.builder()
+                    .success("false")
+                    .error(CurrencyConvertingMultiple.Error.builder()
+                            .code(rates.getError().getCode())
+                            .info(rates.getError().getInfo())
+                            .build())
+                    .build();
+        }
+        return CurrencyConvertingMultiple.builder()
+                .success("true")
+                .conversionResult(convertAll(rates, amount))
+                .build();
     }
 
 

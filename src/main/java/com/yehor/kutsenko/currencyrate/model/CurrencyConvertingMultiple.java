@@ -1,26 +1,19 @@
 package com.yehor.kutsenko.currencyrate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class CurrencyRates {
+public class CurrencyConvertingMultiple {
+    List<CurrencyConverting> conversionResult;
     String success;
-    Instant timestamp;
-    String source;
-    Map<String, Double> rates;
     Error error;
 
     @Data

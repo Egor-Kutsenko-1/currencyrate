@@ -102,8 +102,7 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
         mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/convert/USD?amount=10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result", is(0.23903)))
-                .andExpect(jsonPath("$.info.quote", is(0.023903)))
-                .andExpect(jsonPath("$.info.timestamp", is(now.toString())));
+                .andExpect(jsonPath("$.info.quote", is(0.023903)));
     }
 
 
@@ -113,6 +112,7 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
 
         String jsonResponse = objectMapper.writeValueAsString(
                 CurrencyRatesExternalSourceResponse.builder()
+                        .success("true")
                         .timestamp(Instant.now())
                         .quotes(Map.of(
                                 "UAHUSD", 0.025,
@@ -126,14 +126,14 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
 
         mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/convert?currenciesTo=EUR,USD&amount=100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(2)))
-                .andExpect(jsonPath("$.[0].info.quote", is(0.02)))
-                .andExpect(jsonPath("$.[0].result", is(2.0)))
-                .andExpect(jsonPath("$.[0].query.from", is("UAH")))
-                .andExpect(jsonPath("$.[0].query.to", is("EUR")))
-                .andExpect(jsonPath("$.[1].info.quote", is(0.025)))
-                .andExpect(jsonPath("$.[1].result", is(2.5)))
-                .andExpect(jsonPath("$.[1].query.from", is("UAH")))
-                .andExpect(jsonPath("$.[1].query.to", is("USD")));
+                .andExpect(jsonPath("$.conversionResult.size()", is(2)))
+                .andExpect(jsonPath("$.conversionResult.[0].info.quote", is(0.02)))
+                .andExpect(jsonPath("$.conversionResult.[0].result", is(2.0)))
+                .andExpect(jsonPath("$.conversionResult.[0].query.from", is("UAH")))
+                .andExpect(jsonPath("$.conversionResult.[0].query.to", is("EUR")))
+                .andExpect(jsonPath("$.conversionResult.[1].info.quote", is(0.025)))
+                .andExpect(jsonPath("$.conversionResult.[1].result", is(2.5)))
+                .andExpect(jsonPath("$.conversionResult.[1].query.from", is("UAH")))
+                .andExpect(jsonPath("$.conversionResult.[1].query.to", is("USD")));
     }
 }

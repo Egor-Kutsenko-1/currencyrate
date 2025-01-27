@@ -17,7 +17,17 @@ import static lombok.AccessLevel.PRIVATE;
 @Builder
 @FieldDefaults(level = PRIVATE)
 public class CurrencyRatesExternalSourceResponse {
+    String success;
     Instant timestamp;
     String source;
     Map<String, Double> quotes;
+    Error Error;
+
+    @Data
+    @Builder
+    @FieldDefaults(level = PRIVATE)
+    public static class Error {
+        Integer code;
+        String info;
+    }
 }
