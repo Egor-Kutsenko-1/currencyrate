@@ -26,7 +26,6 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     public CurrencyRates getAllExchangeRatesForCurrency(String baseCurrency, String currenciesToRate) {
 
-
         var exchangeRateResponse = currencySource.getExchangeRate(baseCurrency, currenciesToRate);
 
         var currencyRates = currencyRatesMapper.toModel(exchangeRateResponse);
@@ -64,20 +63,14 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     @Override
     public List<CurrencyConverting> convertMultiple(String currencyFrom, List<String> currenciesToRate, Double amount) {
-
-
         CurrencyRates rates = getRates(currencyFrom, currenciesToRate);
         return convertAll(rates, amount);
     }
 
 
     private CurrencyRates getRates(String baseCurrency, List<String> currenciesToRate) {
-        if (currenciesToRate != null) {
-            String stringCurrencies = String.join(",", currenciesToRate);
-            return getAllExchangeRatesForCurrency(baseCurrency, stringCurrencies);
-        } else {
-            return null;
-        }
+        String stringCurrencies = String.join(",", currenciesToRate);
+        return getAllExchangeRatesForCurrency(baseCurrency, stringCurrencies);
     }
 
     private List<CurrencyConverting> convertAll(CurrencyRates rates, Double amount) {

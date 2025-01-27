@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:latest
+    container_name: currency-service-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass 88888888

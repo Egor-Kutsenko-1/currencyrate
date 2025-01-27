@@ -1,7 +1,9 @@
 # Currency Rate Service
 
 ## Overview
-This service fetches currency exchange rates from external source (exchangerate.host) and returns them to client
+This service fetches currency exchange rates from external source (exchangerate.host) and returns them to client.
+If the same request (with identical parameters) is made more than once within a one-minute(by default) interval, 
+the service will return the cached response instead of making another external API call.
 
 ## API Endpoints
 The application exposes the following endpoints:
@@ -20,5 +22,9 @@ Interactive API documentation is available via Swagger:
 
 ## How to Run the Application
 To start the application, follow these steps:
-1. Launch the application from the `CurrencyRateApplication` class.
+1. Run `docker-compose.yml` to start required dependencies (Redis).
+2. Launch the application from the `CurrencyRateApplication` class.
+
+### Configuration
+- **Time to live**: specify how long redis will keep data in memory `application.redis.ttl`.
 
