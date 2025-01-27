@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -20,13 +24,14 @@ public class CurrencyServiceImpl implements CurrencyService {
     private final CurrencyConversionMapper currencyConversionMapper;
     private final CurrencySource currencySource;
 
-    public CurrencyRates getAllExchangeRatesForCurrency(String currency) {
+    public CurrencyRates getAllExchangeRatesForCurrency(String baseCurrency, String currenciesToRate) {
 
-        var exchangeRateResponse = currencySource.getExchangeRate(currency);
+
+        var exchangeRateResponse = currencySource.getExchangeRate(baseCurrency, currenciesToRate);
 
         var currencyRates = currencyRatesMapper.toModel(exchangeRateResponse);
 
-        log.info("Rates for currency {}: \n {}", currency, currencyRates.getRates());
+        log.info("Rates for baseCurrency {}: \n {}", baseCurrency, currencyRates.getRates());
 
         return currencyRates;
     }
@@ -55,5 +60,47 @@ public class CurrencyServiceImpl implements CurrencyService {
                 amount, currencyFrom, currencyTo, conversionResult.getResult(), currencyTo);
 
         return conversionResult;
+    }
+
+    @Override
+    public List<CurrencyConverting> convertMultiple(String currencyFrom, List<String> currenciesToRate, Double amount) {
+
+
+        CurrencyRates rates = getRates(currencyFrom, currenciesToRate);
+        return convertAll(rates, amount);
+    }
+
+
+    private CurrencyRates getRates(String baseCurrency, List<String> currenciesToRate) {
+        if (currenciesToRate != null) {
+            String stringCurrencies = String.join(",", currenciesToRate);
+            return getAllExchangeRatesForCurrency(baseCurrency, stringCurrencies);
+        } else {
+            return null;
+        }
+    }
+
+    private List<CurrencyConverting> convertAll(CurrencyRates rates, Double amount) {
+        return rates.getRates().entrySet().stream()
+                .map(entry -> buildCurrencyConverting(entry.getKey(), entry.getValue(), amount))
+                .sorted(Comparator.comparing(c -> c.getQuery().getTo()))
+                .toList();
+    }
+
+    private CurrencyConverting buildCurrencyConverting(String currencies, Double rate, Double amount) {
+        Instant now = Instant.now();
+
+        return CurrencyConverting.builder()
+                .info(CurrencyConverting.Info.builder()
+                        .timestamp(now)
+                        .quote(rate)
+                        .build())
+                .result(rate * amount)
+                .query(CurrencyConverting.Query.builder()
+                        .from(currencies.substring(0, 3))
+                        .to(currencies.substring(3))
+                        .amount(amount)
+                        .build())
+                .build();
     }
 }

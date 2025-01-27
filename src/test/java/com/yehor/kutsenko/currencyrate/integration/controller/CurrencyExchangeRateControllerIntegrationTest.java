@@ -105,4 +105,35 @@ public class CurrencyExchangeRateControllerIntegrationTest extends CurrencyRateA
                 .andExpect(jsonPath("$.info.quote", is(0.023903)))
                 .andExpect(jsonPath("$.info.timestamp", is(now.toString())));
     }
+
+
+    @Test
+    void whenConvertCurrencyToMultipleCurrencies_thenShouldReturnCorrectConversion() throws Exception {
+        objectMapper.registerModule(new JavaTimeModule());
+
+        String jsonResponse = objectMapper.writeValueAsString(
+                CurrencyRatesExternalSourceResponse.builder()
+                        .timestamp(Instant.now())
+                        .quotes(Map.of(
+                                "UAHUSD", 0.025,
+                                "UAHEUR", 0.020
+                        ))
+                        .build()
+        );
+
+        EXTERNAL_CURRENCY_SOURCE.stubFor(WireMock.get(WireMock.anyUrl())
+                .willReturn(WireMock.okJson(jsonResponse)));
+
+        mockMvc.perform(get(BASE_URL + "/currencies/exchange/UAH/convert?currenciesTo=EUR,USD&amount=100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()", is(2)))
+                .andExpect(jsonPath("$.[0].info.quote", is(0.02)))
+                .andExpect(jsonPath("$.[0].result", is(2.0)))
+                .andExpect(jsonPath("$.[0].query.from", is("UAH")))
+                .andExpect(jsonPath("$.[0].query.to", is("EUR")))
+                .andExpect(jsonPath("$.[1].info.quote", is(0.025)))
+                .andExpect(jsonPath("$.[1].result", is(2.5)))
+                .andExpect(jsonPath("$.[1].query.from", is("UAH")))
+                .andExpect(jsonPath("$.[1].query.to", is("USD")));
+    }
 }

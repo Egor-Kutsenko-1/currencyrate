@@ -15,6 +15,7 @@ public class CurrencyConvertingExternalSourceResponse {
 
     Info info;
     Double result;
+    Query query;
 
     @Data
     @Builder
@@ -22,5 +23,14 @@ public class CurrencyConvertingExternalSourceResponse {
     public static class Info {
         Instant timestamp;
         Double quote;
+    }
+
+    @Data
+    @Builder
+    @FieldDefaults(level = PRIVATE)
+    public static class Query {
+        String from;
+        String to;
+        Double amount;
     }
 }

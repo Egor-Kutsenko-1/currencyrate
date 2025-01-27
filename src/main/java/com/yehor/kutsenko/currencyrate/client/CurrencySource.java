@@ -6,7 +6,7 @@ import com.yehor.kutsenko.currencyrate.dto.external.CurrencyRatesExternalSourceR
 
 public interface CurrencySource {
 
-    CurrencyRatesExternalSourceResponse getExchangeRate(String source);
+    CurrencyRatesExternalSourceResponse getExchangeRate(String source, String currencies);
 
     CurrencyRatesExternalSourceResponse getRateForSpecificCurrencies(String currencyFrom, String currencyTo);
 

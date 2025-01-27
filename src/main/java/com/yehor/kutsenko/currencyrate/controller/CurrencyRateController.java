@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/currencies/exchange")
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class CurrencyRateController {
     public ResponseEntity<CurrencyRatesResponse> getAllCurrencyRates(@PathVariable String currency) {
         log.info("Get currency rate for {}", currency);
 
-        CurrencyRates allExchangeRatesForCurrency = currencyService.getAllExchangeRatesForCurrency(currency);
+        CurrencyRates allExchangeRatesForCurrency = currencyService.getAllExchangeRatesForCurrency(currency, null);
         CurrencyRatesResponse currencyRatesResponse = currencyRatesMapper.toResponse(allExchangeRatesForCurrency);
 
         return currencyRatesResponse.getRates().isEmpty()
@@ -61,6 +63,22 @@ public class CurrencyRateController {
         CurrencyConvertingResponse currencyConversionResponse = currencyConversionMapper.toResponse(conversionResult);
 
         return currencyConversionResponse.getInfo() == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(currencyConversionResponse);
+    }
+
+    @GetMapping(value = "/{currencyFrom}/convert")
+    public ResponseEntity<List<CurrencyConvertingResponse>> convertMultipleCurrencies(
+            @PathVariable String currencyFrom,
+            @RequestParam List<String> currenciesTo,
+            @RequestParam Double amount) {
+
+        log.info("Converting {} {} to {}", amount, currencyFrom, currenciesTo);
+
+        List<CurrencyConverting> conversionResult = currencyService.convertMultiple(currencyFrom, currenciesTo, amount);
+        List<CurrencyConvertingResponse> currencyConversionResponse = currencyConversionMapper.toResponse(conversionResult);
+
+        return currencyConversionResponse.size() == 0
                 ? ResponseEntity.notFound().build()
                 : ResponseEntity.ok(currencyConversionResponse);
     }

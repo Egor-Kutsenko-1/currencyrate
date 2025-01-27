@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface ExchangeRateClient extends CurrencySource {
 
     @GetMapping(value = "/live?access_key=${api.exchangerate.key}")
-    CurrencyRatesExternalSourceResponse getExchangeRate(@RequestParam("source") String source);
+    CurrencyRatesExternalSourceResponse getExchangeRate(@RequestParam("source") String source,
+                                                        @RequestParam(required = false, value = "currencies") String currencies);
 
     @GetMapping(value = "/live?access_key=${api.exchangerate.key}")
     CurrencyRatesExternalSourceResponse getRateForSpecificCurrencies(
